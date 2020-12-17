@@ -20,13 +20,12 @@
 
 #define VBATPIN A7
 
-int sleep_interval = 5000; //milliseconds
+int sleep_interval = 2000; //milliseconds // BUG -- why can't we set this to 5000 w/ wake_counter_max > 2?
 
-#define watchdog_interval 16000 // milliseconds
+#define watchdog_interval 15000 // milliseconds
 
-int wake_counter_max = 2; // for 10 seconds
-//int wake_counter_max = 60; // for 5 minutes
-int wake_counter_max = 120; // for 10 minutes
+int wake_counter_max = 300; // for 10 min
+
 int wake_counter = 0;
 // note: total sleep time is sleep_interval*wake_counter_max
 
@@ -50,6 +49,14 @@ int max_sensor_attempts = 10;
 
 void setup() {
 
+// startup (or watchdog reset)
+  for (int j=0;j<10;j++) {
+    digitalWrite(LED_BUILTIN, HIGH);
+  delay(100);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(100);
+  }
+  
   int countdownMS = Watchdog.enable(watchdog_interval); // max 16 seconds, try 10
 
   Serial.print("Watchdog enabled! interval (ms): ");
@@ -153,7 +160,6 @@ JsonObject fields = doc.createNestedObject("fields");
    fields["humid"]=humidity;
 fields["batt"]=measuredvbat;
 
-
   char radiopacket[100];
   serializeJson(doc, radiopacket);
   
@@ -182,9 +188,9 @@ fields["batt"]=measuredvbat;
 
   
   digitalWrite(LED_BUILTIN, HIGH);
-  delay(50);
+  delay(10);
   digitalWrite(LED_BUILTIN, LOW);
-  delay(50);
+  delay(10);
 
   Serial.println("sleep chunk ...");
    LowPower.sleep(sleep_interval);
